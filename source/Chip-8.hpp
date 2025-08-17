@@ -25,6 +25,16 @@
 #define JMP_NNN_PLUS_V0 0xB000
 #define RAND 0xC000
 #define DRAW 0xD000
+#define IS_KEY_DOWN 0x000E
+#define IS_KEY_UP 0x0001
+#define VX_DELAY_TIMER 0x0007
+#define IS_KEY_PRESSED 0x000A
+#define DELAY_EQUALS_VX 0x0015
+#define SOUND_EQUALS_VX 0x0008
+#define ADD_I_VX 0x000E
+#define I_EQUALS_SPITE 0x0009
+#define COPY_V0_TO_VX_TO_MEM 0x0055
+#define READ_V0_TO_VX_FROM_MEM 0x0065
 
 class Chip8 {
 private:

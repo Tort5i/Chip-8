@@ -136,6 +136,98 @@ void Chip8::EmulateCycle() {
             }
         }
 
+        case 0xE000:
+            switch (opcode & 0x000F) {
+                case IS_KEY_DOWN:
+                    if (key[V[(opcode & 0x0F00) >> 8]] == 1) {
+                        pc += 4;
+                    } else {
+                        pc += 2;
+                    }
+                    break;
+
+                case IS_KEY_UP:
+                    if (key[V[(opcode & 0x0F00) >> 8]] == 0) {
+                        pc += 4;
+                    } else {
+                        pc += 2;
+                    }
+                    break;
+            }
+            break;
+            
+        case 0xF000:
+            switch (opcode & 0x000F) {
+                case VX_DELAY_TIMER:
+                    V[(opcode & 0x0F00) >> 8] = delayTimer;
+                    pc += 2;
+                    break;
+
+                case IS_KEY_PRESSED:
+                {
+                    bool isKeyPressed{false};
+
+                    for (int i{0}; i < 16; i++) {
+                        if (key[i] == 1) {
+                            V[(opcode & 0x0F00) >> 8] = i;
+                            isKeyPressed = true;
+                        }
+                    }
+
+                    if (!isKeyPressed) {
+                        return;
+                    }
+
+                    pc += 2;
+                    break;
+                }
+
+                case SOUND_EQUALS_VX:
+                    soundTimer = V[(opcode & 0x0F00) >> 8];
+                    pc += 2;
+                    break;
+
+                case ADD_I_VX:
+                    indexRegister += V[(opcode & 0x0F00) >> 8];
+                    pc += 2;
+                    break;
+
+                case I_EQUALS_SPITE:
+                    indexRegister = V[(opcode & 0x0F00) >> 8] * 0x5;
+                    pc += 2;
+                    break;
+
+                switch (opcode & 0x00FF) {
+                    case DELAY_EQUALS_VX:
+                        delayTimer = V[(opcode & 0x0F00) >> 8];
+                        pc += 2;
+                        break;
+
+                    case COPY_V0_TO_VX_TO_MEM:
+                    {
+                        for (int i{0}; i < ((opcode & 0x0F00) >> 8); i++) {
+                            memory[indexRegister+1] = V[i];
+                        }
+
+                        indexRegister += ((opcode & 0x0F00) >> 8) + 1;
+                        pc += 2;
+                        break;
+                    }
+
+                    case READ_V0_TO_VX_FROM_MEM:
+                    {
+                        for (int i{0}; i < ((opcode & 0x0F00) >> 8); i++) {
+                            V[i] = memory[indexRegister + 1];
+                        }
+
+                        indexRegister = ((opcode & 0x0F00) >> 8) + 1;
+                        pc += 2;
+                        break;
+                    }
+                } 
+            }
+            break;
+
         case 0x0000:
             switch (opcode & 0x000F) {
                 case CLS_SCREEN_OPCODE:
