@@ -38,10 +38,11 @@ private:
     unsigned char soundTimer;
     unsigned short stack[16];
     unsigned short stackPointer;
-    unsigned char key[16];
     bool drawFlag;
 
 public:
+    unsigned char key[16];
+
     void Initilize();
     void EmulateCycle();
 };

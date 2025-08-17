@@ -1,19 +1,18 @@
-#include "Graphics.hpp"
+#include "SDL.hpp"
 #include "Chip-8.hpp"
 
-static Graphics graphics;
-//static Chip8 chip8;
-
 int main() {
-    if (!graphics.Init("My chip-8", 64, 32)) {
+    SDL sdl;
+    
+    if (!sdl.Init("My chip-8", 64, 32)) {
         return 1;
     }
 
-    while (!graphics.ShouldGameClose()) {
-        graphics.Update();
+    while (!sdl.ShouldGameClose()) {
+        sdl.Update();
 
-        graphics.ClearBackground(Color{0,0,0,255});
-        graphics.Draw();
+        sdl.ClearBackground(Color{0,0,0,255});
+        sdl.Draw();
     }
 
     return 0;
