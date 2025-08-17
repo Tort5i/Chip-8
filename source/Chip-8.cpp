@@ -9,8 +9,8 @@ void Chip8::Initilize() {
     indexRegister = 0;
     stackPointer = 0;
 
-    for (unsigned char pixel : gfx) {
-        pixel = 0;
+    for (int i{0}; i < (64 * 32); i++) {
+        gfx[i] = 0;
     }
 
     for (unsigned short stackObj : stack) {
@@ -231,6 +231,12 @@ void Chip8::EmulateCycle() {
         case 0x0000:
             switch (opcode & 0x000F) {
                 case CLS_SCREEN_OPCODE:
+                    for (int i{0}; i < (64*32); i++) {
+                        gfx[i] = 0;
+                        drawFlag = true;
+                        pc += 2;
+                        break;
+                    }
                     break;
 
                 case RET_FROM_SUBRTN_OPCODE:
@@ -325,6 +331,10 @@ void Chip8::EmulateCycle() {
         SDL_Log("buzzer, soundTimer: %i", soundTimer);
         soundTimer--;
     }
+}
+
+bool Chip8::shouldDraw() {
+    return drawFlag;
 }
 
 

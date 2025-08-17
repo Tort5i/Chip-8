@@ -1,4 +1,8 @@
 #include "SDL.hpp"
+#include "Globals.hpp"
+
+const Color WHITE{255, 255, 255, 255};
+const Color BLACK{0, 0, 0, 255};
 
 bool SDL::Init(const char* title, int sWidth, int sHeight) {
     if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO)) {
@@ -54,6 +58,27 @@ void SDL::ClearBackground(Color color) {
     SDL_RenderClear(renderer);
 }
 
-void SDL::Draw() {
+void SDL::Draw(Chip8 *chip) {
+    chip->gfx[1]=0;
+    
+    int i{0};
+    SDL_FRect rect{0,0,0,0};
+    for (int j{0}; j < 64; j++) {
+        for (int k{0}; k < 32; k++) {
+            //SDL_Log("I: %d", i);
+            if (chip->gfx[i] == 1) {
+                SDL_SetRenderDrawColor(renderer, WHITE.r, WHITE.g, WHITE.b, WHITE.a);
+                rect.x = j*g_scaleFactor;
+                rect.y = k*g_scaleFactor;
+                rect.w = 1*g_scaleFactor;
+                rect.h = 1*g_scaleFactor;
+                //SDL_Log("Drawing, X: %f, Y: %f, W: %f, H: %f, I: %d", rect.x, rect.y, rect.w, rect.h, i);
+                SDL_RenderFillRect(renderer, &rect);
+                SDL_SetRenderDrawColor(renderer, BLACK.r, BLACK.g, BLACK.b, BLACK.a);
+            } 
+            i++;
+        }
+    }
+    
     SDL_RenderPresent(renderer);
 }

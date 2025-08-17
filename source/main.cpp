@@ -1,11 +1,13 @@
 #include "SDL.hpp"
 #include "Chip-8.hpp"
 
+int g_scaleFactor{24};
+
 int main() {
     SDL sdl;
     Chip8 chip;
     
-    if (!sdl.Init("My chip-8", 64, 32)) {
+    if (!sdl.Init("My chip-8", 64*g_scaleFactor, 32*g_scaleFactor)) {
         return 1;
     }
 
@@ -13,9 +15,12 @@ int main() {
 
     while (!sdl.ShouldGameClose()) {
         sdl.Update(&chip);
+        chip.EmulateCycle();
 
-        sdl.ClearBackground(Color{0,0,0,255});
-        sdl.Draw();
+        if (chip.shouldDraw()) {
+            sdl.ClearBackground(Color{0,0,0,0});
+            sdl.Draw(&chip);
+        }
     }
 
     return 0;

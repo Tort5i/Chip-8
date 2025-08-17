@@ -40,5 +40,5 @@ public:
     void Update(Chip8 *chip8);
 
     void ClearBackground(Color color);
-    void Draw();
+    void Draw(Chip8 *chip);
 };

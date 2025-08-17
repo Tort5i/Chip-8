@@ -43,7 +43,6 @@ private:
     unsigned char V[16];
     unsigned short indexRegister;
     unsigned short pc;
-    unsigned char gfx[64 * 32];
     unsigned char delayTimer;
     unsigned char soundTimer;
     unsigned short stack[16];
@@ -52,7 +51,10 @@ private:
 
 public:
     unsigned char key[16];
+    unsigned char gfx[64 * 32];
 
     void Initilize();
     void EmulateCycle();
+
+    bool shouldDraw();
 };
