@@ -114,9 +114,10 @@ void Chip8::EmulateCycle() {
             break;
 
         case DRAW:
+        {
             unsigned short Vx{ V[(opcode & 0x0F00) >> 8] };
             unsigned short Vy{ V[(opcode & 0x00F0) >> 4] };
-            unsigned short height{ opcode * 0x000F };
+            unsigned short height{ static_cast<unsigned short>(opcode & 0x000F) };
             unsigned short pixel;
 
             V[0xF] = 0;
@@ -133,6 +134,7 @@ void Chip8::EmulateCycle() {
                     break;
                 }
             }
+        }
 
         case 0x0000:
             switch (opcode & 0x000F) {
