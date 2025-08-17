@@ -59,8 +59,6 @@ void SDL::ClearBackground(Color color) {
 }
 
 void SDL::Draw(Chip8 *chip) {
-    chip->gfx[1]=0;
-    
     int i{0};
     SDL_FRect rect{0,0,0,0};
     for (int j{0}; j < 64; j++) {

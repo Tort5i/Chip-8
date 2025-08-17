@@ -1,4 +1,5 @@
 #include <cstring>
+#include <fstream>
 #include <random>
 #include <SDL3/SDL_log.h>
 #include "Chip-8.hpp"
@@ -13,23 +14,53 @@ void Chip8::Initilize() {
         gfx[i] = 0;
     }
 
-    for (unsigned short stackObj : stack) {
-        stackObj = 0;
+    for (int i{0}; i < 16; i++) {
+        stack[i] = 0;
+        V[i] = 0;
     }
 
-    for (unsigned char reg : V) {
-        reg = 0;
-    }
-
-    for (unsigned char mem : memory) {
-        mem = 0;
+    for (int i{0}; i < 4096; i++) {
+        memory[i] = 0;
     }
 
     // load fontset
+    for (int i{0}; i<80; i++) {
+        memory[i] = fontset[i];
+    }
 
     // reset timers
     delayTimer = 0;
     soundTimer = 0;
+}
+
+void Chip8::load(const char *path) {
+    SDL_Log("Loading ROM: %s", path);
+
+    std::ifstream rom;
+    rom.open(path, std::ios::binary | std::ios::in);
+    if (!rom) {
+        SDL_Log("ROM: %s Failed to load", path);
+        return;
+    }
+
+    long rom_size{rom.tellg()};
+    rom.seekg(0, std::ios::end);
+    rom_size = rom.tellg() - rom_size;
+    SDL_Log("Rom Size: %d", rom_size);
+
+    char* rom_buffer = (char*)malloc(sizeof(char) * rom_size);
+    SDL_Log("Malloc Size: %d", sizeof(char) * rom_size);
+    if (!rom_buffer) {
+        SDL_LogError(0, "Unable to Malloc memory");
+        return;
+    }
+
+    rom.read(rom_buffer,rom_size);
+
+    SDL_Log("File loaded");
+
+    rom.close();
+    free(rom_buffer);
 }
 
 void Chip8::EmulateCycle() {
@@ -51,70 +82,86 @@ void Chip8::EmulateCycle() {
             stack[stackPointer] = pc;
             stackPointer++;
             pc = opcode & 0x0FFF;
+            SDL_Log("Subrouteen called");
             break;
 
         case JMP_OPCODE:
             pc = opcode & 0x0FFF;
+            SDL_Log("Jumped too %s", pc);
             break;
 
         case INC_PC_VK_EQUAL:
             if (V[(opcode & 0x0F00) >> 8] == (opcode & 0x00FF)) {
                 pc += 4;
+                SDL_Log("VK equal too kk skipping");
             } else {
                 pc += 2;
+                SDL_Log("VK not equal to kk");
             }
             break;
 
         case INC_PC_VK_NEQUAL:
             if (V[(opcode & 0x0F00) >> 8] != (opcode & 0x00FF)) {
                 pc += 4;
+                SDL_Log("VK not equal to kk skipping");
             } else {
                 pc += 2;
+                SDL_Log("VK equal too kk");
             }
             break;
 
         case INC_PC_VK_VY_EQUAL:
             if (V[(opcode & 0x0F00) >> 8] == V[(opcode & 0x00F0) >> 4]) {
                 pc += 4;
+                SDL_Log("VK and VY equal, skipping");
             } else {
                 pc += 2;
+                SDL_Log("VK and VY not equal");
             }
             break;
 
         case MOV_KK_TO_VX:
             V[(opcode & 0x0F00) >> 8] = opcode & 0x00FF;
             pc += 2;
+            SDL_Log("%s moved to Vk", (opcode & 0x00FF));
             break;
 
         case ADD_VX_KK:
             V[(opcode & 0x0F00) >> 8] += opcode & 0x00FF;
             pc += 2;
+            SDL_Log("VK added to KK");
             break;
 
         case MOV_VY_TO_VX:
             V[(opcode & 0x0F00) >> 8] = V[(opcode & 0x00F0) >> 4];
             pc += 2;
+            SDL_Log("VY moved to Vk");
             break;
 
         case INC_PC_VK_VY_NEQUAL:
             if (V[(opcode & 0x0F00) >> 8] != V[(opcode & 0x00F0) >> 4]) {
                 pc += 4;
+                SDL_Log("VK and VY nequal skipping");
             } else {
                 pc += 2;
+                SDL_Log("VK and VY equal");
             }
             break;
 
         case JMP_NNN_PLUS_V0:
             pc = (opcode & 0x0FFF) + V[0];
+            SDL_Log("Jumped to nnn plus v0");
             break;
 
         case RAND:
             V[(opcode & 0x0F00) >> 8] = (rand() % 255) & (opcode & 0x00FF);
             pc += 2;
+            SDL_Log("Rand number generated");
             break;
 
         case DRAW:
         {
+            SDL_Log("Draw opcode called");
             unsigned short Vx{ V[(opcode & 0x0F00) >> 8] };
             unsigned short Vy{ V[(opcode & 0x00F0) >> 4] };
             unsigned short height{ static_cast<unsigned short>(opcode & 0x000F) };
@@ -139,6 +186,7 @@ void Chip8::EmulateCycle() {
         case 0xE000:
             switch (opcode & 0x000F) {
                 case IS_KEY_DOWN:
+                    SDL_Log("Key down check");
                     if (key[V[(opcode & 0x0F00) >> 8]] == 1) {
                         pc += 4;
                     } else {
@@ -147,6 +195,7 @@ void Chip8::EmulateCycle() {
                     break;
 
                 case IS_KEY_UP:
+                    SDL_Log("Key up check");
                     if (key[V[(opcode & 0x0F00) >> 8]] == 0) {
                         pc += 4;
                     } else {
@@ -159,12 +208,14 @@ void Chip8::EmulateCycle() {
         case 0xF000:
             switch (opcode & 0x000F) {
                 case VX_DELAY_TIMER:
+                    SDL_Log("Delay timer mov to VK");
                     V[(opcode & 0x0F00) >> 8] = delayTimer;
                     pc += 2;
                     break;
 
                 case IS_KEY_PRESSED:
                 {
+                    SDL_Log("Is key pressed loop");
                     bool isKeyPressed{false};
 
                     for (int i{0}; i < 16; i++) {
@@ -183,28 +234,33 @@ void Chip8::EmulateCycle() {
                 }
 
                 case SOUND_EQUALS_VX:
+                    SDL_Log("Sound equals VX");
                     soundTimer = V[(opcode & 0x0F00) >> 8];
                     pc += 2;
                     break;
 
                 case ADD_I_VX:
+                    SDL_Log("I added to VX");
                     indexRegister += V[(opcode & 0x0F00) >> 8];
                     pc += 2;
                     break;
 
                 case I_EQUALS_SPITE:
+                    SDL_Log("I equals sprite");
                     indexRegister = V[(opcode & 0x0F00) >> 8] * 0x5;
                     pc += 2;
                     break;
 
                 switch (opcode & 0x00FF) {
                     case DELAY_EQUALS_VX:
+                        SDL_Log("Delay equals VX");
                         delayTimer = V[(opcode & 0x0F00) >> 8];
                         pc += 2;
                         break;
 
                     case COPY_V0_TO_VX_TO_MEM:
                     {
+                        SDL_Log("V0 to VX copied to mem");
                         for (int i{0}; i < ((opcode & 0x0F00) >> 8); i++) {
                             memory[indexRegister+1] = V[i];
                         }
@@ -216,6 +272,7 @@ void Chip8::EmulateCycle() {
 
                     case READ_V0_TO_VX_FROM_MEM:
                     {
+                        SDL_Log("V0 to VX read from mme");
                         for (int i{0}; i < ((opcode & 0x0F00) >> 8); i++) {
                             V[i] = memory[indexRegister + 1];
                         }
@@ -231,6 +288,7 @@ void Chip8::EmulateCycle() {
         case 0x0000:
             switch (opcode & 0x000F) {
                 case CLS_SCREEN_OPCODE:
+                    SDL_Log("Screen cleared");
                     for (int i{0}; i < (64*32); i++) {
                         gfx[i] = 0;
                         drawFlag = true;
@@ -240,11 +298,13 @@ void Chip8::EmulateCycle() {
                     break;
 
                 case RET_FROM_SUBRTN_OPCODE:
+                    SDL_Log("ret from subrtn");
                     stackPointer--;
                     pc = stack[stackPointer];
                     break;
 
                 case ADD_VX_VY_OPCODE:
+                    SDL_Log("Added vx and vy");
                     if (V[(opcode & 0x00F0) >> 4] > (0xFF - V[(opcode &0x0F00)] >> 8)) {
                         V[0xF] = 1;
                     }
@@ -259,6 +319,7 @@ void Chip8::EmulateCycle() {
 
             switch (opcode & 0x00FF) {
                 case VX_BCD_IN_MEM_OPCODE:
+                    SDL_Log("VX BCD MEM");
                     memory[indexRegister] = V[(opcode & 0x0F00) >> 8] / 100;
                     memory[indexRegister + 1] = (V[(opcode & 0x0F00) >> 8] / 10) % 10;
                     memory[indexRegister + 2] = (V[(opcode & 0x0F00) >> 8] % 100) % 10;
@@ -269,21 +330,25 @@ void Chip8::EmulateCycle() {
 
             switch (opcode & 0xF00F) {
                 case OR_VX_VY:
+                    SDL_Log("VX AND VY OR");
                     V[(opcode & 0x0F00) >> 8] |= V[(opcode & 0x00F0) >> 4];
                     pc += 2;
                     break;
                 
                 case AND_VX_VY:
+                    SDL_Log("VX and VY AND");
                     V[(opcode & 0x0F00) >> 8] &= V[(opcode & 0x00F0) >> 4];
                     pc += 2;
                     break;
 
                 case XOR_VX_VY:
+                    SDL_Log("VX and VY XOR");
                     V[(opcode & 0x0F00) >> 8] ^= V[(opcode & 0x00F0) >> 4];
                     pc += 2;
                     break;
 
                 case SUB_VX_VY:
+                    SDL_Log("VX and VY sub");
                     if (V[(opcode & 0x0F00) >> 8] > V[(opcode & 0x00F0) >> 4]) {
                         V[0xF] = 1;
                     } else {
@@ -294,12 +359,14 @@ void Chip8::EmulateCycle() {
                     break;
 
                 case SHR_VX:
+                    SDL_Log("SHR VX");
                     V[0xF] = V[(opcode & 0x0F00) >> 8] & 0x1;
                     V[(opcode &0x0F00) >> 8] >>= 1;
                     pc += 2;
                     break;
 
                 case SUB_VY_VX:
+                    SDL_Log("Sub VY and VX");
                     if (V[(opcode & 0x0F00) >> 8] < V[(opcode & 0x00F0) >> 4]) {
                         V[0xF] = 1;
                     } else {
@@ -310,6 +377,7 @@ void Chip8::EmulateCycle() {
                     break;
 
                 case MULT_VX_2:
+                    SDL_Log("Mult VX 2");
                     V[0xF] = V[(opcode & 0x0F00) >> 8] >> 7;
                     V[(opcode & 0x0F00) >> 8] <<= 1;
                     pc += 2;

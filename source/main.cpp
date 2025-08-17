@@ -12,6 +12,7 @@ int main() {
     }
 
     chip.Initilize();
+    chip.load("Pong.ch8");
 
     while (!sdl.ShouldGameClose()) {
         sdl.Update(&chip);
