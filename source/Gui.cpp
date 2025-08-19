@@ -53,8 +53,11 @@ void Gui::Draw(SDL *sdl, Chip8 *chip) {
     ImGui_ImplSDLRenderer3_NewFrame();
     ImGui_ImplSDL3_NewFrame();
     ImGui::NewFrame();
+
+    std::string fpsStr = "FPS: " + std::to_string(sdl->frameRate);
     
     if (ImGui::BeginMainMenuBar()) {
+        if (ImGui::BeginMenu(fpsStr.c_str())) {ImGui::EndMenu();}
         if (ImGui::BeginMenu("File")) {
             if (ImGui::MenuItem("Load")) {
                 nfdu8char_t *outpath;

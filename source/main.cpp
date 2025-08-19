@@ -4,7 +4,7 @@
 
 int g_scaleFactor{24};
 int g_menuBarOffset{20};
-static const Uint32 Target_ticks_per_frame{ 1000 / 60 };
+static const Uint32 Target_ticks_per_frame{1000 / 60};
 
 int main(int argc, char* argv[]) {
     /*if (argc != 2) {
@@ -50,6 +50,10 @@ int main(int argc, char* argv[]) {
         if (Target_ticks_per_frame > elapsed) {
             SDL_Delay(Target_ticks_per_frame-(Uint32)elapsed);
         }
+
+        end = SDL_GetTicks();
+        elapsed = end - start;
+        sdl.frameRate = 1000 / elapsed;
     }
 
     return 0;

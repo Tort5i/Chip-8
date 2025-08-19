@@ -9,7 +9,6 @@
 class SDL {
 private:
     const unsigned short targetFrameRate{60};
-    Uint64 frameRate{0};
     bool gameShouldClose{false};
 
     SDL_Window *window{NULL};
@@ -39,6 +38,7 @@ private:
 public:
     float onColor[4]{1, 1, 1, 1};
     float offColor[4]{0, 0, 0, 1};
+    Uint64 frameRate{0};
 
     SDL();
     ~SDL();
