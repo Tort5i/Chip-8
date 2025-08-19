@@ -1,8 +1,9 @@
+#include <SDL3/SDL.h>
+#include <string>
+
 #include "ImGui/imgui.h"
 
 #include "SDL.hpp"
-
-#include <SDL3/SDL.h>
 
 class Gui {
 private:
@@ -12,6 +13,9 @@ private:
     SDL_Window *window;
     SDL_Renderer *renderer;
 
+    bool fileToLoad{false};
+    std::string filePath;
+
 public:
     Gui(SDL *sdl);
     ~Gui();
@@ -19,4 +23,7 @@ public:
     void Initilize(SDL *sdl);
 
     void Draw(SDL *sdl);
+
+    bool FileToLoad();
+    const char* GetFilePath();
 };

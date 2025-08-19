@@ -31,6 +31,11 @@ int main(int argc, char* argv[]) {
         Uint64 start{ SDL_GetTicks() };
         
         sdl.Update(&chip);
+
+        if (gui.FileToLoad()) {
+            chip.load(gui.GetFilePath());
+        }
+
         if (chip.GameLoaded()) {
             chip.EmulateCycle();
         }

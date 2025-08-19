@@ -21,11 +21,13 @@ set(IM_GUI_SOURCES
     source/ImGui/imgui.cpp
     source/ImGui/imgui_impl_sdlrenderer3.cpp)
 
+add_subdirectory(source/nativefiledialog-extended)
+
 target_sources(${PROJECT_NAME} PRIVATE
-                ${IM_GUI_SOURCES}          
+                ${IM_GUI_SOURCES}         
                 source/main.cpp
                 source/Chip-8.cpp
                 source/SDL.cpp
                 source/Gui.cpp)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3)
+target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3 nfd)

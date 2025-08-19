@@ -1,6 +1,7 @@
 #include "ImGui/imgui.h"
 #include "ImGui/imgui_impl_sdl3.h"
 #include "ImGui/imgui_impl_sdlrenderer3.h"
+#include "nfd.hpp"
 #include "Gui.hpp"
 #include "SDL.hpp"
 
@@ -9,6 +10,7 @@ Gui::Gui(SDL *sdl) {
 }
 
 Gui::~Gui() {
+    NFD_Quit();
     ImGui_ImplSDLRenderer3_Shutdown();
     ImGui_ImplSDL3_Shutdown();
     ImGui::DestroyContext();
@@ -33,6 +35,8 @@ void Gui::Initilize(SDL *sdl) {
 
     ImGui_ImplSDL3_InitForSDLRenderer(sdl->GetWindow(), sdl->GetRenderer());\
     ImGui_ImplSDLRenderer3_Init(sdl->GetRenderer());
+
+    NFD_Init();
 }
 
 void Gui::Draw(SDL *sdl) {
@@ -43,6 +47,20 @@ void Gui::Draw(SDL *sdl) {
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu("File")) {
             if (ImGui::MenuItem("Load")) {
+                nfdu8char_t *outpath;
+                nfdu8filteritem_t filters[1]{"ROM", "ch8"};
+                nfdopendialogu8args_t args{0};
+                args.filterList = filters;
+                args.filterCount = 1;
+                nfdresult_t result{ NFD_OpenDialogU8_With(&outpath, &args)};
+
+                if (result == NFD_OKAY) {
+                    SDL_Log("New file loaded, %s", outpath);
+                    filePath = outpath;
+                    fileToLoad = true;
+                } else {
+                    SDL_LogError(0, "NFD error: %s", NFD_GetError());
+                }
             }
             if (ImGui::MenuItem("Exit")) {
                 sdl->CloseGame();
@@ -64,4 +82,11 @@ void Gui::Draw(SDL *sdl) {
     ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), renderer);
 }
 
+bool Gui::FileToLoad() {
+    return fileToLoad;
+}
 
+
+const char* Gui::GetFilePath() {
+    return filePath.c_str();
+}
