@@ -4,7 +4,13 @@
 int g_scaleFactor{24};
 static const Uint32 Target_ticks_per_frame{ 1000 / 60 };
 
-int main() {
+int main(int argc, char* argv[]) {
+    if (argc != 2) {
+        SDL_LogError(0, "Usage error");
+        SDL_Log("./Chip-8 [Chip-8 ROM]");
+        return;
+    }
+    
     SDL sdl;
     Chip8 chip;
     
@@ -13,7 +19,7 @@ int main() {
     }
 
     chip.Initilize();
-    chip.load("Pong.ch8");
+    chip.load(argv[1]);
 
     while (!sdl.ShouldGameClose()) {
         Uint64 start{ SDL_GetTicks() };
