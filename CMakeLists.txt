@@ -7,7 +7,12 @@ find_package(SDL3 REQUIRED)
 
 add_compile_options(-Wall -pedantic-errors -Weffc++ -Wextra -Wconversion -Wsign-conversion)
 
-add_executable(${PROJECT_NAME})
+if (WIN32)
+    add_executable(${PROJECT_NAME} WIN32)
+else()
+    add_executable(${PROJECT_NAME})
+endif()
+
 target_sources(${PROJECT_NAME} PRIVATE
                 source/main.cpp
                 source/Chip-8.cpp
