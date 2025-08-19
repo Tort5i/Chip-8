@@ -39,7 +39,6 @@
 class Chip8 {
 private:
     unsigned short opcode;
-    unsigned char V[16];
     unsigned short indexRegister;
     unsigned short pc;
     unsigned char delayTimer;
@@ -73,6 +72,7 @@ private:
 
 public:
   unsigned char memory[4096];
+  unsigned char V[16];
 
     unsigned char key[16];
     unsigned char gfx[64 * 32];

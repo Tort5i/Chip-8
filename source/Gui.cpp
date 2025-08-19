@@ -87,7 +87,20 @@ void Gui::Draw(SDL *sdl, Chip8 *chip) {
     if (showVRegViewer) {
         ImGui::Begin("V Register viewer", &showVRegViewer);
 
-        ImGui::Text("mother flipping v reg viewer");
+        if (ImGui::BeginTable("V table", 16, ImGuiTableFlags_Borders)) {
+            for (int row{0}; row < 2; row++) {
+                ImGui::TableNextColumn();
+                for (int column{0}; column < 16; column++) {
+                    ImGui::TableSetColumnIndex(column);
+                    if (0 == row) {
+                        ImGui::Text("%d", column);
+                    } else {
+                        ImGui::Text("%hu", chip->V[column]);
+                    }
+                }
+            }
+            ImGui::EndTable();
+        }
 
         ImGui::End();
     }
