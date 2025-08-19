@@ -21,6 +21,7 @@ int main() {
         if (chip.shouldDraw()) {
             sdl.ClearBackground(Color{0,0,0,0});
             sdl.Draw(&chip);
+            chip.drawn();
         }
     }
 

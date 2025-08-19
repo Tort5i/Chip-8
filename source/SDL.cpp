@@ -64,6 +64,7 @@ void SDL::Draw(Chip8 *chip) {
     for (int j{0}; j < 64; j++) {
         for (int k{0}; k < 32; k++) {
             //SDL_Log("I: %d", i);
+            i = j + k * 64;
             if (chip->gfx[i] == 1) {
                 SDL_SetRenderDrawColor(renderer, WHITE.r, WHITE.g, WHITE.b, WHITE.a);
                 rect.x = j*g_scaleFactor;
@@ -74,7 +75,6 @@ void SDL::Draw(Chip8 *chip) {
                 SDL_RenderFillRect(renderer, &rect);
                 SDL_SetRenderDrawColor(renderer, BLACK.r, BLACK.g, BLACK.b, BLACK.a);
             } 
-            i++;
         }
     }
     

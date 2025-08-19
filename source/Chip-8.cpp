@@ -84,21 +84,20 @@ void Chip8::EmulateCycle() {
     switch (opcode & 0xF000) {
 
         case 0x0000:
-            switch (opcode & 0x000F) {
+            switch (opcode & 0x00FF) {
                 case CLS_SCREEN_OPCODE:
                     SDL_Log("Screen cleared");
                     for (int i{0}; i < (64*32); i++) {
                         gfx[i] = 0;
                         drawFlag = true;
-                        pc += 2;
-                        break;
                     }
+                    pc += 2;
                     break;
 
                 case RET_FROM_SUBRTN_OPCODE:
                     SDL_Log("ret from subrtn");
                     stackPointer--;
-                    pc = stack[stackPointer];
+                    pc = stack[stackPointer] + 2;
                     break;
             }
             break;
@@ -201,9 +200,9 @@ void Chip8::EmulateCycle() {
                 case SUB_VX_VY:
                     SDL_Log("VX and VY sub");
                     if (V[(opcode & 0x0F00) >> 8] >= V[(opcode & 0x00F0) >> 4]) {
-                        V[0xF] = 0;
-                    } else {
                         V[0xF] = 1;
+                    } else {
+                        V[0xF] = 0;
                     }
                     V[(opcode & 0x0F00) >> 8] -= V[(opcode & 0x00F0) >> 4];
                     pc += 2;
@@ -276,15 +275,16 @@ void Chip8::EmulateCycle() {
             for (int yLine{0}; yLine < height; yLine++) {
                 pixel = memory[indexRegister + yLine];
                 for (int xLine{0}; xLine < 8; xLine++) {
-                    if (gfx[(Vx + xLine + ((Vy + yLine) * 64))]) {
-                        V[0xF] = 1;
+                    if ((pixel & (0x80 >> xLine)) != 0) {
+                        if (gfx[(Vx + xLine + ((Vy + yLine) * 64))] == 1) {
+                            V[0xF] = 1;
+                        }
+                        gfx[Vx + xLine + ((Vy + yLine) * 64)] ^= 1;
                     }
-                    gfx[Vx + xLine + ((Vy + yLine) * 64)] ^= 1;
-
-                    drawFlag = true;
                 }
-                pc += 2;
             }
+            drawFlag = true;
+            pc += 2;
         }
         break;
 
@@ -311,7 +311,7 @@ void Chip8::EmulateCycle() {
             break;
             
         case 0xF000:
-            switch (opcode & 0x000F) {
+            switch (opcode & 0x00FF) {
                 case VX_DELAY_TIMER:
                     SDL_Log("Delay timer mov to VK");
                     V[(opcode & 0x0F00) >> 8] = delayTimer;
@@ -356,48 +356,44 @@ void Chip8::EmulateCycle() {
                     pc += 2;
                     break;
 
-                case 0x0005:
-                case 0x0003:
-                switch (opcode & 0x00FF) {
-                    case DELAY_EQUALS_VX:
-                        SDL_Log("Delay equals VX");
-                        delayTimer = V[(opcode & 0x0F00) >> 8];
-                        pc += 2;
-                        break;
+                case DELAY_EQUALS_VX:
+                    SDL_Log("Delay equals VX");
+                    delayTimer = V[(opcode & 0x0F00) >> 8];
+                    pc += 2;
+                    break;
 
-                    case VX_BCD_IN_MEM_OPCODE:
-                        SDL_Log("VX BCD MEM");
-                        memory[indexRegister] = V[(opcode & 0x0F00) >> 8] / 100;
-                        memory[indexRegister + 1] = (V[(opcode & 0x0F00) >> 8] / 10) % 10;
-                        memory[indexRegister + 2] = (V[(opcode & 0x0F00) >> 8] % 100) % 10;
-                        pc += 2;
-                        break;
+                case VX_BCD_IN_MEM_OPCODE:
+                    SDL_Log("VX BCD MEM");
+                    memory[indexRegister] = V[(opcode & 0x0F00) >> 8] / 100;
+                    memory[indexRegister + 1] = (V[(opcode & 0x0F00) >> 8] / 10) % 10;
+                    memory[indexRegister + 2] = (V[(opcode & 0x0F00) >> 8] % 100) % 10;
+                    pc += 2;
+                    break;
 
-                    case COPY_V0_TO_VX_TO_MEM:
-                    {
-                        SDL_Log("V0 to VX copied to mem");
-                        for (int i{0}; i < ((opcode & 0x0F00) >> 8); i++) {
-                            memory[indexRegister+i] = V[i];
-                        }
-
-                        indexRegister += ((opcode & 0x0F00) >> 8) + 1;
-                        pc += 2;
-                        break;
+                case COPY_V0_TO_VX_TO_MEM:
+                {
+                    SDL_Log("V0 to VX copied to mem");
+                    for (int i{0}; i <= ((opcode & 0x0F00) >> 8); i++) {
+                        memory[indexRegister+i] = V[i];
                     }
 
-                    case READ_V0_TO_VX_FROM_MEM:
-                    {
-                        SDL_Log("V0 to VX read from mme");
-                        for (int i{0}; i < ((opcode & 0x0F00) >> 8); i++) {
-                            V[i] = memory[indexRegister + i];
-                        }
+                   // indexRegister += ((opcode & 0x0F00) >> 8) + 1;
+                    pc += 2;
+                    break;
+                }
 
-                        indexRegister = ((opcode & 0x0F00) >> 8) + 1;
-                        pc += 2;
-                        break;
+                case READ_V0_TO_VX_FROM_MEM:
+                {
+                    SDL_Log("V0 to VX read from mme");
+                    for (int i{0}; i <= ((opcode & 0x0F00) >> 8); i++) {
+                        V[i] = memory[indexRegister + i];
                     }
-                } 
-            }
+
+                    //indexRegister = ((opcode & 0x0F00) >> 8) + 1;
+                    pc += 2;
+                    break;
+                }
+            } 
             break;
 
         default:
@@ -418,6 +414,10 @@ void Chip8::EmulateCycle() {
 
 bool Chip8::shouldDraw() {
     return drawFlag;
+}
+
+void Chip8::drawn() {
+    drawFlag = false;
 }
 
 

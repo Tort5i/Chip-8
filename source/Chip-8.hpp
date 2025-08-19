@@ -2,11 +2,11 @@
 
 // Opcodes
 #define SET_INDEX_REG_OPCODE 0xA000
-#define CLS_SCREEN_OPCODE 0x0000
-#define RET_FROM_SUBRTN_OPCODE 0x000E
+#define CLS_SCREEN_OPCODE 0x00E0
+#define RET_FROM_SUBRTN_OPCODE 0x00EE
 #define CALL_SUBRTN_OPCODE 0x2000
 #define ADD_VX_VY_OPCODE 0x8004
-#define VX_BCD_IN_MEM_OPCODE 0x0033
+#define VX_BCD_IN_MEM_OPCODE 0x33
 #define JMP_OPCODE 0x1000
 #define INC_PC_VK_EQUAL 0x3000
 #define INC_PC_VK_NEQUAL 0x4000
@@ -27,14 +27,14 @@
 #define DRAW 0xD000
 #define IS_KEY_DOWN 0x000E
 #define IS_KEY_UP 0x0001
-#define VX_DELAY_TIMER 0x0007
-#define IS_KEY_PRESSED 0x000A
-#define DELAY_EQUALS_VX 0x0015
-#define SOUND_EQUALS_VX 0x0008
-#define ADD_I_VX 0x000E
-#define I_EQUALS_SPITE 0x0009
-#define COPY_V0_TO_VX_TO_MEM 0x0055
-#define READ_V0_TO_VX_FROM_MEM 0x0065
+#define VX_DELAY_TIMER 0x07
+#define IS_KEY_PRESSED 0x0A
+#define DELAY_EQUALS_VX 0x15
+#define SOUND_EQUALS_VX 0x18
+#define ADD_I_VX 0x1E
+#define I_EQUALS_SPITE 0x29
+#define COPY_V0_TO_VX_TO_MEM 0x55
+#define READ_V0_TO_VX_FROM_MEM 0x65
 
 class Chip8 {
 private:
@@ -79,4 +79,5 @@ public:
     void EmulateCycle();
 
     bool shouldDraw();
+    void drawn();
 };
