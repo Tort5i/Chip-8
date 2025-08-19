@@ -5,11 +5,11 @@ int g_scaleFactor{24};
 static const Uint32 Target_ticks_per_frame{ 1000 / 60 };
 
 int main(int argc, char* argv[]) {
-    if (argc != 2) {
+    /*if (argc != 2) {
         SDL_LogError(0, "Usage error");
         SDL_Log("./Chip-8 [Chip-8 ROM]");
         return -1;
-    }
+    }*/
     
     SDL sdl;
     Chip8 chip;

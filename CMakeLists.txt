@@ -18,12 +18,13 @@ set(IM_GUI_SOURCES
     source/ImGui/imgui_impl_sdl3.cpp
     source/ImGui/imgui_tables.cpp
     source/ImGui/imgui_widgets.cpp
-    source/ImGui/imgui.cpp)
+    source/ImGui/imgui.cpp
+    source/ImGui/imgui_impl_sdlrenderer3.cpp)
 
 target_sources(${PROJECT_NAME} PRIVATE
+                ${IM_GUI_SOURCES}          
                 source/main.cpp
                 source/Chip-8.cpp
-                source/SDL.cpp
-                ${IM_GUI_SOURCES})
+                source/SDL.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3)
