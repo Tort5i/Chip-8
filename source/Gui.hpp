@@ -16,6 +16,8 @@ private:
     bool fileToLoad{false};
     std::string filePath;
 
+    bool ShowMemViewer{false};
+
 public:
     Gui(SDL *sdl);
     ~Gui();

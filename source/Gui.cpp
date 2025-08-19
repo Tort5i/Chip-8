@@ -67,7 +67,23 @@ void Gui::Draw(SDL *sdl) {
             }
             ImGui::EndMenu();
         }
-        ImGui::EndMainMenuBar();
+        
+
+        if (ImGui::BeginMenu("Chip-8")) {
+            if (ImGui::MenuItem("Memory Viewer")) {
+                ShowMemViewer = true;
+            }
+            ImGui::EndMenu();
+        }
+    }
+    ImGui::EndMainMenuBar();
+
+    if (ShowMemViewer) {
+        ImGui::Begin("Memory viewer");
+
+        ImGui::Text("Mother flipping memory viewer");
+
+        ImGui::End();
     }
 
 
