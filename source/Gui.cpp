@@ -6,6 +6,16 @@
 #include "SDL.hpp"
 #include "Chip-8.hpp"
 
+// Each REG gets a column
+#define VREG_TABLE_COLUMNS 16
+#define VREG_TABLE_ROWS 2
+
+// 2 bytes plus a for the stuff on the left
+#define MEM_TABLE_COLUMS 17
+#define TOTAL_MEM 0x1000
+// total mem (0x1000) / colums (-1 as one is for labels) + 1 to display all mem locations
+#define MEM_TABLE_ROWS (TOTAL_MEM / (MEM_TABLE_COLUMS-1))+1
+
 Gui::Gui(SDL *sdl) {
     Initilize(sdl);
 }
@@ -87,10 +97,10 @@ void Gui::Draw(SDL *sdl, Chip8 *chip) {
     if (showVRegViewer) {
         ImGui::Begin("V Register viewer", &showVRegViewer);
 
-        if (ImGui::BeginTable("V table", 16, ImGuiTableFlags_Borders)) {
-            for (int row{0}; row < 2; row++) {
+        if (ImGui::BeginTable("V table", VREG_TABLE_COLUMNS, ImGuiTableFlags_Borders)) {
+            for (int row{0}; row < VREG_TABLE_ROWS; row++) {
                 ImGui::TableNextColumn();
-                for (int column{0}; column < 16; column++) {
+                for (int column{0}; column < VREG_TABLE_COLUMNS; column++) {
                     ImGui::TableSetColumnIndex(column);
                     if (0 == row) {
                         ImGui::Text("%d", column);
@@ -108,18 +118,22 @@ void Gui::Draw(SDL *sdl, Chip8 *chip) {
     if (ShowMemViewer) {
         ImGui::Begin("Memory viewer", &ShowMemViewer);
 
-        if (ImGui::BeginTable("Memory", 0xF+2, ImGuiTableFlags_Borders)) {
+        if (ImGui::BeginTable("Memory", MEM_TABLE_COLUMS, ImGuiTableFlags_Borders)) {
             int i{0};
-            for (int row{0}; row < 256; row++) {
+            for (int row{0}; row < MEM_TABLE_ROWS; row++) {
                 ImGui::TableNextColumn();
-                for (int column{0}; column < 0xF+2; column++) {
+                for (int column{0}; column < MEM_TABLE_COLUMS; column++) {
                     ImGui::TableSetColumnIndex(column);
-                    if (row == 0 && column != 0) {
+                    
+                    // if top right leave blank
+                    if (row == 0 && column == 0) {continue;}
+                    // If it is the top row and not the first column
+                    else if (row == 0 && column != 0) {
                         ImGui::Text("%X", column-1);
-                    }  else if (column == 0) {
+                    }  else if (column == 0) { // label for the left hand side
                         ImGui::Text("%03X", row*0x10);
-                    } else {
-                        if (i < 0x4096) {
+                    } else { // if mem location
+                        if (i < TOTAL_MEM) {
                             bool different{false};
                             for (int j{0}; j < prevMemSize; j++) {
                                 int index = (prevMemIndex - 1 - j + 60) % 60;
