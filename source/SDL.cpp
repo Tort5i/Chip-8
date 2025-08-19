@@ -1,8 +1,24 @@
 #include "SDL.hpp"
 #include "Globals.hpp"
+#include "ImGui/imgui.h"
+#include "ImGui/imgui_impl_sdl3.h"
+#include "ImGui/imgui_impl_sdlrenderer3.h"
 
 const Color WHITE{255, 255, 255, 255};
 const Color BLACK{0, 0, 0, 255};
+
+SDL::SDL() {}
+
+SDL::~SDL() {
+    ImGui_ImplSDLRenderer3_Shutdown();
+    ImGui_ImplSDL3_Shutdown();
+    ImGui::DestroyContext();
+
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+
+}
 
 bool SDL::Init(const char* title, int sWidth, int sHeight) {
     if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO)) {
@@ -14,6 +30,21 @@ bool SDL::Init(const char* title, int sWidth, int sHeight) {
         SDL_Log("Failed to create window and renderer, %s", SDL_GetError());
         return false;
     }
+    float mainScale{ SDL_GetDisplayContentScale(SDL_GetPrimaryDisplay()) };
+
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io{ ImGui::GetIO()}; (void)io;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+
+    ImGui::StyleColorsDark();
+
+    ImGuiStyle& style{ ImGui::GetStyle() };
+    style.ScaleAllSizes(mainScale);
+    style.FontScaleDpi = mainScale;
+
+    ImGui_ImplSDL3_InitForSDLRenderer(window, renderer);
+    ImGui_ImplSDLRenderer3_Init(renderer);
 
     return true;
 }
@@ -23,32 +54,33 @@ bool SDL::ShouldGameClose() {
 }
 
 void SDL::Update(Chip8 *chip) {
-    SDL_PollEvent(&events);
+    while (SDL_PollEvent(&events)) {
 
-    switch (events.type) {
-        case SDL_EVENT_QUIT:
-            gameShouldClose = true;
-            break;
-
-        case SDL_EVENT_KEY_DOWN:
-            if (events.key.key == SDLK_ESCAPE) {
+        switch (events.type) {
+            case SDL_EVENT_QUIT:
                 gameShouldClose = true;
-            }
+                break;
+
+            case SDL_EVENT_KEY_DOWN:
+                if (events.key.key == SDLK_ESCAPE) {
+                    gameShouldClose = true;
+                }
             
-            for (int i{0}; i < 16; i++) {
-                if (events.key.key == keymap[i]) {
-                    chip->key[i] = 1;
+                for (int i{0}; i < 16; i++) {
+                    if (events.key.key == keymap[i]) {
+                        chip->key[i] = 1;
+                    }
                 }
-            }
-            break;
+                break;
 
-        case SDL_EVENT_KEY_UP:
-            for (int i{0}; i < 16; i++) {
-                if (events.key.key == keymap[i]) {
-                    chip->key[i] = 0;
+            case SDL_EVENT_KEY_UP:
+                for (int i{0}; i < 16; i++) {
+                    if (events.key.key == keymap[i]) {
+                        chip->key[i] = 0;
+                    }
                 }
-            }
 
+        }
     }
     
 }

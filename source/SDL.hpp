@@ -35,6 +35,9 @@ private:
     };
 
 public:
+    SDL();
+    ~SDL();
+
     bool Init(const char* title, int sWidth, int sHeight);
     bool ShouldGameClose();
     void Update(Chip8 *chip8);
