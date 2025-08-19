@@ -69,6 +69,8 @@ private:
   0xF0, 0x80, 0xF0, 0x80, 0x80  // F
 };
 
+  bool gameLoaded{false};
+
 
 public:
     unsigned char key[16];
@@ -78,6 +80,7 @@ public:
     void load(const char *path);
     void EmulateCycle();
 
+    bool GameLoaded();
     bool shouldDraw();
     void drawn();
 };

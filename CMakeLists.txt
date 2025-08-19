@@ -25,6 +25,7 @@ target_sources(${PROJECT_NAME} PRIVATE
                 ${IM_GUI_SOURCES}          
                 source/main.cpp
                 source/Chip-8.cpp
-                source/SDL.cpp)
+                source/SDL.cpp
+                source/Gui.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3)

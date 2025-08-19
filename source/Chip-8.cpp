@@ -31,6 +31,8 @@ void Chip8::Initilize() {
     // reset timers
     delayTimer = 0;
     soundTimer = 0;
+
+    gameLoaded = false;
 }
 
 void Chip8::load(const char *path) {
@@ -68,6 +70,7 @@ void Chip8::load(const char *path) {
         return;
     }
 
+    gameLoaded = true;
     fclose(rom);
     free(romBuffer);
 }
@@ -414,6 +417,10 @@ void Chip8::EmulateCycle() {
 
 bool Chip8::shouldDraw() {
     return drawFlag;
+}
+
+bool Chip8::GameLoaded() {
+    return gameLoaded;
 }
 
 void Chip8::drawn() {

@@ -13,6 +13,7 @@ private:
 
     SDL_Window *window{NULL};
     SDL_Renderer *renderer{NULL};
+
     SDL_Event events{0};
 
     unsigned short keymap[16] {
@@ -35,13 +36,18 @@ private:
     };
 
 public:
+
     SDL();
     ~SDL();
 
     bool Init(const char* title, int sWidth, int sHeight);
     bool ShouldGameClose();
+    void CloseGame();
     void Update(Chip8 *chip8);
 
     void ClearBackground(Color color);
     void Draw(Chip8 *chip);
+
+    SDL_Window* GetWindow();
+    SDL_Renderer* GetRenderer();
 };

@@ -10,10 +10,6 @@ const Color BLACK{0, 0, 0, 255};
 SDL::SDL() {}
 
 SDL::~SDL() {
-    ImGui_ImplSDLRenderer3_Shutdown();
-    ImGui_ImplSDL3_Shutdown();
-    ImGui::DestroyContext();
-
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
@@ -30,21 +26,6 @@ bool SDL::Init(const char* title, int sWidth, int sHeight) {
         SDL_Log("Failed to create window and renderer, %s", SDL_GetError());
         return false;
     }
-    float mainScale{ SDL_GetDisplayContentScale(SDL_GetPrimaryDisplay()) };
-
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io{ ImGui::GetIO()}; (void)io;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-
-    ImGui::StyleColorsDark();
-
-    ImGuiStyle& style{ ImGui::GetStyle() };
-    style.ScaleAllSizes(mainScale);
-    style.FontScaleDpi = mainScale;
-
-    ImGui_ImplSDL3_InitForSDLRenderer(window, renderer);
-    ImGui_ImplSDLRenderer3_Init(renderer);
 
     return true;
 }
@@ -53,8 +34,13 @@ bool SDL::ShouldGameClose() {
     return gameShouldClose;
 }
 
+void SDL::CloseGame() {
+    gameShouldClose = true;
+}
+
 void SDL::Update(Chip8 *chip) {
     while (SDL_PollEvent(&events)) {
+        ImGui_ImplSDL3_ProcessEvent(&events);
 
         switch (events.type) {
             case SDL_EVENT_QUIT:
@@ -100,7 +86,7 @@ void SDL::Draw(Chip8 *chip) {
             if (chip->gfx[i] == 1) {
                 SDL_SetRenderDrawColor(renderer, WHITE.r, WHITE.g, WHITE.b, WHITE.a);
                 rect.x = j*g_scaleFactor;
-                rect.y = k*g_scaleFactor;
+                rect.y = k*g_scaleFactor+g_menuBarOffset;
                 rect.w = 1*g_scaleFactor;
                 rect.h = 1*g_scaleFactor;
                 //SDL_Log("Drawing, X: %f, Y: %f, W: %f, H: %f, I: %d", rect.x, rect.y, rect.w, rect.h, i);
@@ -110,5 +96,13 @@ void SDL::Draw(Chip8 *chip) {
         }
     }
     
-    SDL_RenderPresent(renderer);
+    //SDL_RenderPresent(renderer);
+}
+
+SDL_Window* SDL::GetWindow() {
+    return window;
+}
+
+SDL_Renderer* SDL::GetRenderer() {
+    return renderer;
 }
