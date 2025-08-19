@@ -8,7 +8,7 @@ int main(int argc, char* argv[]) {
     if (argc != 2) {
         SDL_LogError(0, "Usage error");
         SDL_Log("./Chip-8 [Chip-8 ROM]");
-        return;
+        return -1;
     }
     
     SDL sdl;
