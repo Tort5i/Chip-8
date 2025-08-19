@@ -2,6 +2,7 @@
 #include "Chip-8.hpp"
 
 int g_scaleFactor{24};
+static const Uint32 Target_ticks_per_frame{ 1000 / 60 };
 
 int main() {
     SDL sdl;
@@ -15,6 +16,8 @@ int main() {
     chip.load("Pong.ch8");
 
     while (!sdl.ShouldGameClose()) {
+        Uint64 start{ SDL_GetTicks() };
+        
         sdl.Update(&chip);
         chip.EmulateCycle();
 
@@ -22,6 +25,12 @@ int main() {
             sdl.ClearBackground(Color{0,0,0,0});
             sdl.Draw(&chip);
             chip.drawn();
+        }
+
+        Uint64 end{ SDL_GetTicks() };
+        Uint64 elapsed{ end-start };
+        if (Target_ticks_per_frame > elapsed) {
+            SDL_Delay(Target_ticks_per_frame-(Uint32)elapsed);
         }
     }
 
