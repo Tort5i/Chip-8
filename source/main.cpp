@@ -37,7 +37,7 @@ int main(int argc, char* argv[]) {
         }
 
         if (true) {
-            sdl.ClearBackground(Color{0,0,0,0});
+            sdl.ClearBackground(Color{sdl.offColor[0]*255,sdl.offColor[1]*255,sdl.offColor[2]*255,sdl.offColor[3]*255});
             sdl.Draw(&chip);
             gui.Draw(&sdl, &chip);
             chip.drawn();

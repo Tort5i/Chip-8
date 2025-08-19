@@ -74,6 +74,9 @@ void Gui::Draw(SDL *sdl, Chip8 *chip) {
             if (ImGui::MenuItem("Unload")) {
                 chip->Initilize();
             }
+            if (ImGui::MenuItem("Preferences")) {
+                showPreferenceMenu = true;
+            }
             if (ImGui::MenuItem("Exit")) {
                 sdl->CloseGame();
             }
@@ -93,8 +96,36 @@ void Gui::Draw(SDL *sdl, Chip8 *chip) {
     }
     ImGui::EndMainMenuBar();
 
+    if (showPreferenceMenu) {
+        ImGui::Begin("Preferences", &showPreferenceMenu);
+
+        ImGui::ColorEdit4("On color", sdl->onColor);
+        ImGui::ColorEdit4("Off color", sdl->offColor);
+
+        ImGui::End();
+    }
+
     if (showVRegViewer) {
         ImGui::Begin("V Register viewer", &showVRegViewer);
+
+        bool intSelected{false};
+        bool hexSelected{false};
+        bool charSelected{false};
+
+        if (ImGui::BeginCombo("Display type", "", ImGuiComboFlags_NoPreview)) {
+            ImGui::Selectable("Interger", &intSelected);
+            ImGui::Selectable("Hexidecimil", &hexSelected);
+            ImGui::Selectable("Char", &charSelected);
+            ImGui::EndCombo();
+        }
+
+        if (intSelected) {
+            vDisplayType = Display_Type::Interger;
+        } else if (hexSelected) {
+            vDisplayType = Display_Type::Hexidecimal;
+        } else if (charSelected) {
+            vDisplayType = Display_Type::Character;
+        }
 
         if (ImGui::BeginTable("V table", VREG_TABLE_COLUMNS, ImGuiTableFlags_Borders)) {
             int i{0};
@@ -109,7 +140,7 @@ void Gui::Draw(SDL *sdl, Chip8 *chip) {
                         for (int j{0}; j < prevVSize; j++) {
                             int index {(prevVIndex - 1 - j + RECORD_LENGTH) % RECORD_LENGTH};
                             if (index == -1) {
-                                index = 15;
+                                index = TOTAL_V-1;
                             }
 
                             if (previousV[index][i] != chip->V[i]) {
@@ -119,12 +150,26 @@ void Gui::Draw(SDL *sdl, Chip8 *chip) {
                         }
 
                         if (different) {
-                            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
-                            ImGui::Text("%hu", chip->V[column]);
-                            ImGui::PopStyleColor();
-                        } else {
-                            ImGui::Text("%hu", chip->V[column]);
-                        }
+                                if (0 == chip->V[i]) {
+                                ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
+                            } else {
+                                ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
+                            }
+                            }
+                            switch (vDisplayType) {
+                                case Display_Type::Interger:
+                                    ImGui::Text("%hu", chip->V[i]);
+                                    break;
+                                case Display_Type::Hexidecimal:
+                                    ImGui::Text("%hX", chip->V[i]);
+                                    break;
+                                case Display_Type::Character:
+                                    ImGui::Text("%c", chip->V[i]);
+                                    break;
+                            }
+                            if (different) {    
+                                ImGui::PopStyleColor();
+                            }
                         i++;
                     }
                 }
@@ -149,6 +194,25 @@ void Gui::Draw(SDL *sdl, Chip8 *chip) {
 
     if (ShowMemViewer) {
         ImGui::Begin("Memory viewer", &ShowMemViewer);
+
+        bool intSelected{false};
+        bool hexSelected{false};
+        bool charSelected{false};
+
+        if (ImGui::BeginCombo("Display type", "", ImGuiComboFlags_NoPreview)) {
+            ImGui::Selectable("Interger", &intSelected);
+            ImGui::Selectable("Hexidecimil", &hexSelected);
+            ImGui::Selectable("Char", &charSelected);
+            ImGui::EndCombo();
+        }
+
+        if (intSelected) {
+            memDisplayType = Display_Type::Interger;
+        } else if (hexSelected) {
+            memDisplayType = Display_Type::Hexidecimal;
+        } else if (charSelected) {
+            memDisplayType = Display_Type::Character;
+        }
 
         if (ImGui::BeginTable("Memory", MEM_TABLE_COLUMS, ImGuiTableFlags_Borders)) {
             int i{0};
@@ -179,11 +243,25 @@ void Gui::Draw(SDL *sdl, Chip8 *chip) {
                             }
                             
                             if (different) {
-                                ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0,255,0,255));
-                                ImGui::Text("%hu", chip->memory[i]);
-                                ImGui::PopStyleColor();
+                                if (0 == chip->memory[i]) {
+                                ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
                             } else {
-                                ImGui::Text("%hu", chip->memory[i]);
+                                ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
+                            }
+                            }
+                            switch (memDisplayType) {
+                                case Display_Type::Interger:
+                                    ImGui::Text("%hu", chip->memory[i]);
+                                    break;
+                                case Display_Type::Hexidecimal:
+                                    ImGui::Text("%hX", chip->memory[i]);
+                                    break;
+                                case Display_Type::Character:
+                                    ImGui::Text("%c", chip->memory[i]);
+                                    break;
+                            }
+                            if (different) {    
+                                ImGui::PopStyleColor();
                             }
                             i++;
                         }
@@ -191,6 +269,7 @@ void Gui::Draw(SDL *sdl, Chip8 *chip) {
                     
                 }
             }
+        
 
             for (int i{0}; i < TOTAL_MEM; i++) {
                 previousMem[prevMemIndex][i] = chip->memory[i];

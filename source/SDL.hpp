@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SDL3/SDL.h>
+#include "ImGui/imgui.h"
 
 #include "Chip-8.hpp"
 #include "types.hpp"
@@ -36,6 +37,8 @@ private:
     };
 
 public:
+    float onColor[4]{1, 1, 1, 1};
+    float offColor[4]{0, 0, 0, 1};
 
     SDL();
     ~SDL();

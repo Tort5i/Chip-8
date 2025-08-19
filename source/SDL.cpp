@@ -84,14 +84,14 @@ void SDL::Draw(Chip8 *chip) {
             //SDL_Log("I: %d", i);
             i = j + k * 64;
             if (chip->gfx[i] == 1) {
-                SDL_SetRenderDrawColor(renderer, WHITE.r, WHITE.g, WHITE.b, WHITE.a);
+                SDL_SetRenderDrawColor(renderer, onColor[0]*255, onColor[1]*255, onColor[2]*255, onColor[3]*255);
                 rect.x = j*g_scaleFactor;
                 rect.y = k*g_scaleFactor+g_menuBarOffset;
                 rect.w = 1*g_scaleFactor;
                 rect.h = 1*g_scaleFactor;
                 //SDL_Log("Drawing, X: %f, Y: %f, W: %f, H: %f, I: %d", rect.x, rect.y, rect.w, rect.h, i);
                 SDL_RenderFillRect(renderer, &rect);
-                SDL_SetRenderDrawColor(renderer, BLACK.r, BLACK.g, BLACK.b, BLACK.a);
+                SDL_SetRenderDrawColor(renderer, offColor[0]*255, offColor[1]*255, offColor[2]*255, offColor[3]*255);
             } 
         }
     }

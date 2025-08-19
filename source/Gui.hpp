@@ -11,6 +11,12 @@
 
 #define RECORD_LENGTH 100
 
+enum class Display_Type {
+    Interger = 0x0,
+    Hexidecimal,
+    Character,
+};
+
 class Gui {
 private:
     ImGuiIO io;
@@ -22,13 +28,17 @@ private:
     bool fileToLoad{false};
     std::string filePath;
 
+    bool showPreferenceMenu{false};
+
     bool ShowMemViewer{false};
     bool showVRegViewer{false};
 
+    Display_Type memDisplayType{Display_Type::Interger};
     unsigned char previousMem[RECORD_LENGTH][TOTAL_MEM];
     int prevMemIndex{0};
     int prevMemSize{0};
 
+    Display_Type vDisplayType{Display_Type::Interger};
     unsigned char previousV[RECORD_LENGTH][TOTAL_V];
     int prevVIndex{0};
     int prevVSize{0};
