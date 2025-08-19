@@ -13,9 +13,17 @@ else()
     add_executable(${PROJECT_NAME})
 endif()
 
+set(IM_GUI_SOURCES 
+    source/ImGui/imgui_draw.cpp
+    source/ImGui/imgui_impl_sdl3.cpp
+    source/ImGui/imgui_tables.cpp
+    source/ImGui/imgui_widgets.cpp
+    source/ImGui/imgui.cpp)
+
 target_sources(${PROJECT_NAME} PRIVATE
                 source/main.cpp
                 source/Chip-8.cpp
-                source/SDL.cpp)
+                source/SDL.cpp
+                ${IM_GUI_SOURCES})
 
 target_link_libraries(${PROJECT_NAME} PRIVATE SDL3::SDL3)
