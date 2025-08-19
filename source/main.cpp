@@ -32,10 +32,6 @@ int main(int argc, char* argv[]) {
         
         sdl.Update(&chip);
 
-        if (gui.FileToLoad()) {
-            chip.load(gui.GetFilePath());
-        }
-
         if (chip.GameLoaded()) {
             chip.EmulateCycle();
         }
@@ -43,7 +39,7 @@ int main(int argc, char* argv[]) {
         if (true) {
             sdl.ClearBackground(Color{0,0,0,0});
             sdl.Draw(&chip);
-            gui.Draw(&sdl);
+            gui.Draw(&sdl, &chip);
             chip.drawn();
             auto* renderer{ sdl.GetRenderer()};
             SDL_RenderPresent(renderer);

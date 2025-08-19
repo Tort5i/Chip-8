@@ -36,6 +36,8 @@ void Chip8::Initilize() {
 }
 
 void Chip8::load(const char *path) {
+    Initilize();
+    
     SDL_Log("Loading ROM: %s", path);
 
     FILE* rom{ fopen(path, "rb") };

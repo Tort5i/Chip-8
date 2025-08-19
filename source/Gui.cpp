@@ -4,6 +4,7 @@
 #include "nfd.hpp"
 #include "Gui.hpp"
 #include "SDL.hpp"
+#include "Chip-8.hpp"
 
 Gui::Gui(SDL *sdl) {
     Initilize(sdl);
@@ -39,7 +40,7 @@ void Gui::Initilize(SDL *sdl) {
     NFD_Init();
 }
 
-void Gui::Draw(SDL *sdl) {
+void Gui::Draw(SDL *sdl, Chip8 *chip) {
     ImGui_ImplSDLRenderer3_NewFrame();
     ImGui_ImplSDL3_NewFrame();
     ImGui::NewFrame();
@@ -56,11 +57,13 @@ void Gui::Draw(SDL *sdl) {
 
                 if (result == NFD_OKAY) {
                     SDL_Log("New file loaded, %s", outpath);
-                    filePath = outpath;
-                    fileToLoad = true;
+                    chip->load(outpath);
                 } else {
                     SDL_LogError(0, "NFD error: %s", NFD_GetError());
                 }
+            }
+            if (ImGui::MenuItem("Unload")) {
+                chip->Initilize();
             }
             if (ImGui::MenuItem("Exit")) {
                 sdl->CloseGame();
@@ -70,6 +73,9 @@ void Gui::Draw(SDL *sdl) {
         
 
         if (ImGui::BeginMenu("Chip-8")) {
+            if (ImGui::MenuItem("V Registers")) {
+                showVRegViewer = true;
+            }
             if (ImGui::MenuItem("Memory Viewer")) {
                 ShowMemViewer = true;
             }
@@ -78,10 +84,68 @@ void Gui::Draw(SDL *sdl) {
     }
     ImGui::EndMainMenuBar();
 
-    if (ShowMemViewer) {
-        ImGui::Begin("Memory viewer");
+    if (showVRegViewer) {
+        ImGui::Begin("V Register viewer", &showVRegViewer);
 
-        ImGui::Text("Mother flipping memory viewer");
+        ImGui::Text("mother flipping v reg viewer");
+
+        ImGui::End();
+    }
+
+    if (ShowMemViewer) {
+        ImGui::Begin("Memory viewer", &ShowMemViewer);
+
+        if (ImGui::BeginTable("Memory", 0xF+2, ImGuiTableFlags_Borders)) {
+            int i{0};
+            for (int row{0}; row < 256; row++) {
+                ImGui::TableNextColumn();
+                for (int column{0}; column < 0xF+2; column++) {
+                    ImGui::TableSetColumnIndex(column);
+                    if (row == 0 && column != 0) {
+                        ImGui::Text("%X", column-1);
+                    }  else if (column == 0) {
+                        ImGui::Text("%03X", row*0x10);
+                    } else {
+                        if (i < 0x4096) {
+                            bool different{false};
+                            for (int j{0}; j < prevMemSize; j++) {
+                                int index = (prevMemIndex - 1 - j + 60) % 60;
+                                if (index == -1) {
+                                    index = 59;
+                                }
+                                if (previousMem[index][i] != chip->memory[i]) {
+                                    different = true;
+                                    break;
+                                }
+                            }
+                            
+                            if (different) {
+                                ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0,255,0,255));
+                                ImGui::Text("%hu", chip->memory[i]);
+                                ImGui::PopStyleColor();
+                            } else {
+                                ImGui::Text("%hu", chip->memory[i]);
+                            }
+                            i++;
+                        }
+                    }
+                    
+                }
+            }
+
+            for (int i{0}; i < 4096; i++) {
+                previousMem[prevMemIndex][i] = chip->memory[i];
+            }
+            if (prevMemIndex == 59) {
+                prevMemIndex = 0;
+            } else {
+                prevMemIndex++;
+            }
+            if (prevMemSize != 60) {
+                prevMemSize++;
+            }
+            ImGui::EndTable();
+        }
 
         ImGui::End();
     }
