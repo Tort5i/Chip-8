@@ -12,7 +12,6 @@
 
 // 2 bytes plus a for the stuff on the left
 #define MEM_TABLE_COLUMS 17
-#define TOTAL_MEM 0x1000
 // total mem (0x1000) / colums (-1 as one is for labels) + 1 to display all mem locations
 #define MEM_TABLE_ROWS (TOTAL_MEM / (MEM_TABLE_COLUMS-1))+1
 
@@ -98,6 +97,7 @@ void Gui::Draw(SDL *sdl, Chip8 *chip) {
         ImGui::Begin("V Register viewer", &showVRegViewer);
 
         if (ImGui::BeginTable("V table", VREG_TABLE_COLUMNS, ImGuiTableFlags_Borders)) {
+            int i{0};
             for (int row{0}; row < VREG_TABLE_ROWS; row++) {
                 ImGui::TableNextColumn();
                 for (int column{0}; column < VREG_TABLE_COLUMNS; column++) {
@@ -105,10 +105,42 @@ void Gui::Draw(SDL *sdl, Chip8 *chip) {
                     if (0 == row) {
                         ImGui::Text("%d", column);
                     } else {
-                        ImGui::Text("%hu", chip->V[column]);
+                        bool different{false};
+                        for (int j{0}; j < prevVSize; j++) {
+                            int index {(prevVIndex - 1 - j + RECORD_LENGTH) % RECORD_LENGTH};
+                            if (index == -1) {
+                                index = 15;
+                            }
+
+                            if (previousV[index][i] != chip->V[i]) {
+                                different = true;
+                                break;
+                            }
+                        }
+
+                        if (different) {
+                            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
+                            ImGui::Text("%hu", chip->V[column]);
+                            ImGui::PopStyleColor();
+                        } else {
+                            ImGui::Text("%hu", chip->V[column]);
+                        }
+                        i++;
                     }
                 }
             }
+            for (int i{0}; i < TOTAL_V; i++) {
+                previousV[prevVIndex][i] = chip->V[i];
+            }
+            if (prevVIndex == RECORD_LENGTH-1) {
+                prevVIndex = 0;
+            } else {
+                prevVIndex++;
+            }
+            if (prevVSize != RECORD_LENGTH) {
+                prevVSize++;
+            }
+
             ImGui::EndTable();
         }
 
@@ -136,7 +168,7 @@ void Gui::Draw(SDL *sdl, Chip8 *chip) {
                         if (i < TOTAL_MEM) {
                             bool different{false};
                             for (int j{0}; j < prevMemSize; j++) {
-                                int index = (prevMemIndex - 1 - j + 60) % 60;
+                                int index = (prevMemIndex - 1 - j + RECORD_LENGTH) % RECORD_LENGTH;
                                 if (index == -1) {
                                     index = 59;
                                 }
@@ -160,15 +192,15 @@ void Gui::Draw(SDL *sdl, Chip8 *chip) {
                 }
             }
 
-            for (int i{0}; i < 4096; i++) {
+            for (int i{0}; i < TOTAL_MEM; i++) {
                 previousMem[prevMemIndex][i] = chip->memory[i];
             }
-            if (prevMemIndex == 59) {
+            if (prevMemIndex == RECORD_LENGTH-1) {
                 prevMemIndex = 0;
             } else {
                 prevMemIndex++;
             }
-            if (prevMemSize != 60) {
+            if (prevMemSize != RECORD_LENGTH) {
                 prevMemSize++;
             }
             ImGui::EndTable();

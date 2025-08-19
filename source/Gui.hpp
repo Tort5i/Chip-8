@@ -6,6 +6,11 @@
 #include "SDL.hpp"
 #include "Chip-8.hpp"
 
+#define TOTAL_MEM 0x1000
+#define TOTAL_V 16
+
+#define RECORD_LENGTH 100
+
 class Gui {
 private:
     ImGuiIO io;
@@ -20,9 +25,13 @@ private:
     bool ShowMemViewer{false};
     bool showVRegViewer{false};
 
-    unsigned char previousMem[60][4096];
+    unsigned char previousMem[RECORD_LENGTH][TOTAL_MEM];
     int prevMemIndex{0};
     int prevMemSize{0};
+
+    unsigned char previousV[RECORD_LENGTH][TOTAL_V];
+    int prevVIndex{0};
+    int prevVSize{0};
 
 public:
     Gui(SDL *sdl);
