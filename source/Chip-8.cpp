@@ -52,6 +52,12 @@ void Chip8::load(const char *path) {
         return;
     }
 
+    size_t result = fread(romBuffer, sizeof(char), (size_t)romSize, rom);
+    if (result != romSize) {
+        SDL_LogError(0, "Failed to read ROM");
+        return;
+    }
+
     if ((4096-512) > romSize){
         for (int i = 0; i < romSize; ++i) {
             memory[i + 512] = (uint8_t)romBuffer[i];   
@@ -182,7 +188,7 @@ void Chip8::EmulateCycle() {
 
                 case ADD_VX_VY_OPCODE:
                     SDL_Log("Added vx and vy");
-                    if (V[(opcode & 0x00F0) >> 4] > (0xFF - V[(opcode &0x0F00)] >> 8)) {
+                    if (V[(opcode & 0x00F0) >> 4] > (0xFF - V[(opcode &0x0F00) >> 8])) {
                         V[0xF] = 1;
                     }
                     else {
@@ -194,10 +200,10 @@ void Chip8::EmulateCycle() {
 
                 case SUB_VX_VY:
                     SDL_Log("VX and VY sub");
-                    if (V[(opcode & 0x0F00) >> 8] > V[(opcode & 0x00F0) >> 4]) {
-                        V[0xF] = 1;
-                    } else {
+                    if (V[(opcode & 0x0F00) >> 8] >= V[(opcode & 0x00F0) >> 4]) {
                         V[0xF] = 0;
+                    } else {
+                        V[0xF] = 1;
                     }
                     V[(opcode & 0x0F00) >> 8] -= V[(opcode & 0x00F0) >> 4];
                     pc += 2;
@@ -228,6 +234,7 @@ void Chip8::EmulateCycle() {
                     pc += 2;
                     break;
             }
+            break;
             
 
         case INC_PC_VK_VY_NEQUAL:
@@ -275,8 +282,8 @@ void Chip8::EmulateCycle() {
                     gfx[Vx + xLine + ((Vy + yLine) * 64)] ^= 1;
 
                     drawFlag = true;
-                    pc += 2;
                 }
+                pc += 2;
             }
         }
         break;
@@ -349,6 +356,8 @@ void Chip8::EmulateCycle() {
                     pc += 2;
                     break;
 
+                case 0x0005:
+                case 0x0003:
                 switch (opcode & 0x00FF) {
                     case DELAY_EQUALS_VX:
                         SDL_Log("Delay equals VX");
@@ -368,7 +377,7 @@ void Chip8::EmulateCycle() {
                     {
                         SDL_Log("V0 to VX copied to mem");
                         for (int i{0}; i < ((opcode & 0x0F00) >> 8); i++) {
-                            memory[indexRegister+1] = V[i];
+                            memory[indexRegister+i] = V[i];
                         }
 
                         indexRegister += ((opcode & 0x0F00) >> 8) + 1;
@@ -380,7 +389,7 @@ void Chip8::EmulateCycle() {
                     {
                         SDL_Log("V0 to VX read from mme");
                         for (int i{0}; i < ((opcode & 0x0F00) >> 8); i++) {
-                            V[i] = memory[indexRegister + 1];
+                            V[i] = memory[indexRegister + i];
                         }
 
                         indexRegister = ((opcode & 0x0F00) >> 8) + 1;
