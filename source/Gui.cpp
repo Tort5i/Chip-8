@@ -10,10 +10,11 @@
 #define VREG_TABLE_COLUMNS 16
 #define VREG_TABLE_ROWS 2
 
+#define MEM_TABLE_EXTRA_COLUMNS 2
 // 2 bytes plus a for the stuff on the left
-#define MEM_TABLE_COLUMS 17
+#define MEM_TABLE_COLUMS 16+MEM_TABLE_EXTRA_COLUMNS
 // total mem (0x1000) / colums (-1 as one is for labels) + 1 to display all mem locations
-#define MEM_TABLE_ROWS (TOTAL_MEM / (MEM_TABLE_COLUMS-1))+1
+#define MEM_TABLE_ROWS (TOTAL_MEM / (MEM_TABLE_COLUMS-MEM_TABLE_EXTRA_COLUMNS))+1
 
 Gui::Gui(SDL *sdl) {
     Initilize(sdl);
@@ -102,8 +103,10 @@ void Gui::Draw(SDL *sdl, Chip8 *chip) {
     if (showPreferenceMenu) {
         ImGui::Begin("Preferences", &showPreferenceMenu);
 
-        ImGui::ColorEdit4("On color", sdl->onColor);
-        ImGui::ColorEdit4("Off color", sdl->offColor);
+        if (ImGui::CollapsingHeader("Colors")) {
+            ImGui::ColorEdit4("On color", sdl->onColor);
+            ImGui::ColorEdit4("Off color", sdl->offColor);
+        }
 
         ImGui::End();
     }
@@ -225,12 +228,16 @@ void Gui::Draw(SDL *sdl, Chip8 *chip) {
                     ImGui::TableSetColumnIndex(column);
                     
                     // if top right leave blank
-                    if (row == 0 && column == 0) {continue;}
+                    if ((row == 0 && column == 0) || column == 8) {continue;}
                     // If it is the top row and not the first column
                     else if (row == 0 && column != 0) {
-                        ImGui::Text("%X", column-1);
+                        if (column < 8) {
+                            ImGui::Text("%X", column-1);
+                        } else {
+                            ImGui::Text("%X", column-2);
+                        }
                     }  else if (column == 0) { // label for the left hand side
-                        ImGui::Text("%03X", row*0x10);
+                        ImGui::Text("%03X:", (row*0x10)-0x10);
                     } else { // if mem location
                         if (i < TOTAL_MEM) {
                             bool different{false};
@@ -254,10 +261,10 @@ void Gui::Draw(SDL *sdl, Chip8 *chip) {
                             }
                             switch (memDisplayType) {
                                 case Display_Type::Interger:
-                                    ImGui::Text("%hu", chip->memory[i]);
+                                    ImGui::Text("%02hu", chip->memory[i]);
                                     break;
                                 case Display_Type::Hexidecimal:
-                                    ImGui::Text("%hX", chip->memory[i]);
+                                    ImGui::Text("%02hX", chip->memory[i]);
                                     break;
                                 case Display_Type::Character:
                                     ImGui::Text("%c", chip->memory[i]);
