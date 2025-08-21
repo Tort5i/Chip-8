@@ -40,7 +40,6 @@ class Chip8 {
 private:
     unsigned short opcode;
     unsigned short indexRegister;
-    unsigned short pc;
     unsigned char delayTimer;
     unsigned char soundTimer;
     unsigned short stack[16];
@@ -68,11 +67,14 @@ private:
 };
 
   bool gameLoaded{false};
+  bool emulatorPaused{false};
+  bool singleStep{false};
 
 
 public:
   unsigned char memory[4096];
   unsigned char V[16];
+  unsigned short pc;
 
     unsigned char key[16];
     unsigned char gfx[64 * 32];
@@ -84,4 +86,8 @@ public:
     bool GameLoaded();
     bool shouldDraw();
     void drawn();
+
+    bool Paused();
+    void Pause();
+    void SingleStep();
 };

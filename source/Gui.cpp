@@ -16,7 +16,7 @@
 // total mem (0x1000) / colums (-1 as one is for labels) + 1 to display all mem locations
 #define MEM_TABLE_ROWS (TOTAL_MEM / (MEM_TABLE_COLUMS-MEM_TABLE_EXTRA_COLUMNS))+1
 
-Gui::Gui(SDL *sdl) {
+Gui::Gui(SDL *sdl){
     Initilize(sdl);
 }
 
@@ -37,9 +37,9 @@ void Gui::Initilize(SDL *sdl) {
 
     ImGui::StyleColorsDark();
 
-    style = ImGui::GetStyle() ;
-    style.ScaleAllSizes(mainScale);
-    style.FontScaleDpi = mainScale;
+    style = &ImGui::GetStyle() ;
+    style->ScaleAllSizes(mainScale);
+    style->FontScaleDpi = mainScale;
 
     assert(sdl->GetWindow() != nullptr);
     assert(sdl->GetRenderer() != nullptr);
@@ -58,7 +58,7 @@ void Gui::Draw(SDL *sdl, Chip8 *chip) {
     std::string fpsStr = "FPS: " + std::to_string(sdl->frameRate);
     
     if (ImGui::BeginMainMenuBar()) {
-        if (ImGui::BeginMenu(fpsStr.c_str())) {ImGui::EndMenu();}
+        ImGui::Text(fpsStr.c_str());
         if (ImGui::BeginMenu("File")) {
             if (ImGui::MenuItem("Load")) {
                 nfdu8char_t *outpath;
@@ -97,6 +97,16 @@ void Gui::Draw(SDL *sdl, Chip8 *chip) {
             }
             ImGui::EndMenu();
         }
+
+        if (ImGui::BeginMenu("Emulator")) {
+            if (ImGui::Button("Pause emulation!")) {
+                chip->Pause();
+            }
+            if (ImGui::Button("Single step")) {
+                chip->SingleStep();
+            }
+            ImGui::EndMenu();
+        }
     }
     ImGui::EndMainMenuBar();
 
@@ -104,8 +114,30 @@ void Gui::Draw(SDL *sdl, Chip8 *chip) {
         ImGui::Begin("Preferences", &showPreferenceMenu);
 
         if (ImGui::CollapsingHeader("Colors")) {
+            ImGui::Text("Emulator colors:");
             ImGui::ColorEdit4("On color", sdl->onColor);
             ImGui::ColorEdit4("Off color", sdl->offColor);
+            ImGui::Spacing();
+            
+            ImGui::Text("Gui Color");
+            ImVec4 color{style->Colors[ImGuiCol_TitleBgActive]};
+            float tmp[4] {color.x, color.y, color.z, color.w};
+            ImGui::ColorEdit4("Main color", tmp);
+            color = {tmp[0], tmp[1], tmp[2], tmp[3]};
+            style->Colors[ImGuiCol_TitleBgActive] = color;
+            style->Colors[ImGuiCol_FrameBg] = color;
+            style->Colors[ImGuiCol_Button] = color;
+            style->Colors[ImGuiCol_ButtonHovered] = color;
+            style->Colors[ImGuiCol_Tab] = color;
+            style->Colors[ImGuiCol_Header] = color;
+            style->Colors[ImGuiCol_HeaderHovered] = color;
+
+            color = style->Colors[ImGuiCol_ButtonActive];
+            memcpy(tmp, &color, sizeof(float) * 4);
+            ImGui::ColorEdit4("Clicked color", tmp);
+            color = {tmp[0], tmp[1], tmp[2], tmp[3]};
+            style->Colors[ImGuiCol_ButtonActive] = color;
+            style->Colors[ImGuiCol_FrameBgHovered] = color;
         }
 
         ImGui::End();
@@ -161,6 +193,8 @@ void Gui::Draw(SDL *sdl, Chip8 *chip) {
                             } else {
                                 ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
                             }
+                            } else if (chip->V[i] == 0) {
+                                ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(49, 47, 51, 255));
                             }
                             switch (vDisplayType) {
                                 case Display_Type::Interger:
@@ -173,7 +207,7 @@ void Gui::Draw(SDL *sdl, Chip8 *chip) {
                                     ImGui::Text("%c", chip->V[i]);
                                     break;
                             }
-                            if (different) {    
+                            if (different || chip->V[i] == 0) {    
                                 ImGui::PopStyleColor();
                             }
                         i++;
@@ -199,18 +233,21 @@ void Gui::Draw(SDL *sdl, Chip8 *chip) {
     }
 
     if (ShowMemViewer) {
-        ImGui::Begin("Memory viewer", &ShowMemViewer);
+        ImGui::Begin("Memory viewer", &ShowMemViewer, ImGuiWindowFlags_MenuBar);
 
         bool intSelected{false};
         bool hexSelected{false};
         bool charSelected{false};
 
-        if (ImGui::BeginCombo("Display type", "", ImGuiComboFlags_NoPreview)) {
-            ImGui::Selectable("Interger", &intSelected);
-            ImGui::Selectable("Hexidecimil", &hexSelected);
-            ImGui::Selectable("Char", &charSelected);
-            ImGui::EndCombo();
-        }
+        if (ImGui::BeginMenuBar()) {
+            if (ImGui::BeginMenu("Display")) {
+                if (ImGui::MenuItem("Display type")) {
+                    
+                }
+                ImGui::EndMenu();
+            }
+            ImGui::EndMenuBar();
+        } 
 
         if (intSelected) {
             memDisplayType = Display_Type::Interger;
@@ -252,12 +289,18 @@ void Gui::Draw(SDL *sdl, Chip8 *chip) {
                                 }
                             }
                             
-                            if (different) {
+                            if (i == chip->pc) {
+                                ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(100, 21, 153, 255));
+                            } else if (different) {
                                 if (0 == chip->memory[i]) {
                                 ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
                             } else {
                                 ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
                             }
+                            } else {
+                                if (chip->memory[i] == 0) {
+                                    ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(49, 47, 51, 255));
+                                }
                             }
                             switch (memDisplayType) {
                                 case Display_Type::Interger:
@@ -270,7 +313,7 @@ void Gui::Draw(SDL *sdl, Chip8 *chip) {
                                     ImGui::Text("%c", chip->memory[i]);
                                     break;
                             }
-                            if (different) {    
+                            if (different || i == chip->pc || 0 == chip->memory[i]) {    
                                 ImGui::PopStyleColor();
                             }
                             i++;

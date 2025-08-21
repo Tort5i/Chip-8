@@ -415,6 +415,11 @@ void Chip8::EmulateCycle() {
         SDL_Log("buzzer, soundTimer: %i", soundTimer);
         soundTimer--;
     }
+
+    if (singleStep) {
+        singleStep = false;
+        emulatorPaused = true;
+    }
 }
 
 bool Chip8::shouldDraw() {
@@ -427,6 +432,19 @@ bool Chip8::GameLoaded() {
 
 void Chip8::drawn() {
     drawFlag = false;
+}
+
+bool Chip8::Paused() {
+    return emulatorPaused;
+}
+
+void Chip8::Pause() {
+    emulatorPaused = !emulatorPaused;
+}
+
+void Chip8::SingleStep() {
+    singleStep = true;
+    emulatorPaused = false;
 }
 
 

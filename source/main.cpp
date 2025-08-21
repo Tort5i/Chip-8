@@ -32,7 +32,7 @@ int main(int argc, char* argv[]) {
         
         sdl.Update(&chip);
 
-        if (chip.GameLoaded()) {
+        if (chip.GameLoaded() && !chip.Paused()) {
             chip.EmulateCycle();
         }
 

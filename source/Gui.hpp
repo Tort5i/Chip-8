@@ -20,7 +20,7 @@ enum class Display_Type {
 class Gui {
 private:
     ImGuiIO io;
-    ImGuiStyle style;
+    ImGuiStyle *style;
     float mainScale;
     SDL_Window *window;
     SDL_Renderer *renderer;
