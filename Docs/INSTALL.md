@@ -57,14 +57,23 @@ If moving the exe ensure that SDL.dll that is generated during compilation is in
 Install Build dependecies for your distro
 
 - Debian/Ubuntu
+
 `apt install build-essential cmake libsdl3-dev`
+
 - Fedora
+
 `dnf install make automake gcc gcc-c++ kernal-devel SDL3-devel`
+
 - Arch
+
 `pacman -S base-devel cmake sdl3 git`
+
 Then build the process like other programs:
+
 `git clone https://github.com/Tort5i/Chip-8.git`
+
 or
+
 `git clone --branch ImGui https://github.com/Tort5i/Chip-8.git`
 
 ```
