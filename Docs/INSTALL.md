@@ -29,7 +29,7 @@ make install
 ```
 finally add SDL3 to your system path (Mine installed in Program Files (x86)) and resart your computer
 
-Now we can install the emulator
+Now we can install the emulator,
 Clone the repositories files locally using:
 `git clone https://github.com/Tort5i/Chip-8.git`
 Or for ImGui version
@@ -51,3 +51,25 @@ make
 To run you can navigate to the build folder and run the exe or: `./Chip-8`
 
 If moving the exe ensure that SDL.dll that is generated during compilation is in the same folder as Chip-8.exe.
+
+## Linux 
+
+Install Build dependecies for your distro
+
+- Debian/Ubuntu
+`apt install build-essential cmake libsdl3-dev`
+- Fedora
+`dnf install make automake gcc gcc-c++ kernal-devel SDL3-devel`
+- Arch
+`pacman -S base-devel cmake sdl3 git`
+Then build the process like other programs:
+`git clone https://github.com/Tort5i/Chip-8.git`
+or
+`git clone --branch ImGui https://github.com/Tort5i/Chip-8.git`
+
+```
+cd Chip-8
+mkdir build && cd build
+cmake ..
+make
+```
